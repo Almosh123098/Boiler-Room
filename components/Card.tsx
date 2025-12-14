@@ -143,8 +143,7 @@ const Card: React.FC<CardProps> = ({
     >
       <div className={`
         relative w-full h-full 
-        ${isBoiler ? 'rounded-none' : 'rounded-2xl'} 
-        ${isBoiler ? 'border-0' : 'border-[3px] border-stone-800'}
+        rounded-2xl border-[3px] border-stone-800
         overflow-hidden shadow-2xl bg-stone-900 group select-none
         ${isInteractable && !isDragging && !isShuffling && !isBoiler ? 'hover:scale-[1.02] transition-transform duration-300' : ''}
       `}>
