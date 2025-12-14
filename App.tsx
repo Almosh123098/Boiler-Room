@@ -152,9 +152,8 @@ const App: React.FC = () => {
       {/* Main Card Area */}
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-8">
         {/* Scale container down slightly to ensure spread out cards fit on mobile screens */}
-        {/* We apply overflow-hidden and rounded styling ONLY during the boiler phase (not awake) */}
-        {/* This masks the sliding cards to create the quadrant reveal effect while keeping the Awake card exit animation visible */}
-        <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.85] sm:scale-100 transition-all duration-500 ${!isAwake ? 'overflow-hidden rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
+        {/* Removed overflow-hidden to allow cards to extend visually outside the frame */}
+        <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.85] sm:scale-100 transition-all duration-500 ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {/* Loading Overlay */}
             {isShuffling && (
