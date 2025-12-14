@@ -227,7 +227,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer Controls */}
-      <footer className="relative z-10 w-full max-w-md mb-6 flex flex-col gap-4">
+      <footer className="relative z-10 w-full max-w-md mb-16 flex flex-col gap-4">
         
         {/* Helper Text */}
         <div className="text-center h-6">
