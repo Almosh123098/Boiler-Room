@@ -5,6 +5,8 @@ import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 interface CardProps {
   data: CardData;
   onSwipe?: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
+  onDrag?: (id: string, x: number, y: number) => void;
+  dragOffset?: { x: number, y: number };
   index: number;
   totalCards: number;
   isInteractable: boolean;
@@ -17,6 +19,8 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ 
   data, 
   onSwipe, 
+  onDrag,
+  dragOffset = { x: 0, y: 0 },
   index, 
   totalCards, 
   isInteractable, 
@@ -25,9 +29,9 @@ const Card: React.FC<CardProps> = ({
   isShuffling = false,
   gridPos = { x: 0, y: 0 }
 }) => {
-  // Drag state
-  const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+  // Local state only for tracking active gesture status, position is now controlled by parent
   const [isDragging, setIsDragging] = useState(false);
+  const dragDeltaRef = useRef({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Constants for physics
@@ -42,20 +46,22 @@ const Card: React.FC<CardProps> = ({
     // Only allow interaction if specifically enabled
     if (!isInteractable || isExiting || isShuffling) return;
     
-    // For boiler cards, we don't want to prevent default too aggressively to allow scrolling if needed,
-    // but here we are in a fixed app.
     e.preventDefault(); 
     
     setIsDragging(true);
+    dragDeltaRef.current = { x: 0, y: 0 };
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging) return;
-    setDragPos(prev => ({
-      x: prev.x + e.movementX,
-      y: prev.y + e.movementY
-    }));
+    
+    // Accumulate movement in ref
+    dragDeltaRef.current.x += e.movementX;
+    dragDeltaRef.current.y += e.movementY;
+    
+    // Notify parent to update visual state of this and other cards
+    onDrag?.(data.id, dragDeltaRef.current.x, dragDeltaRef.current.y);
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -63,23 +69,24 @@ const Card: React.FC<CardProps> = ({
     setIsDragging(false);
     (e.target as Element).releasePointerCapture(e.pointerId);
 
-    // Determine direction
-    const absX = Math.abs(dragPos.x);
-    const absY = Math.abs(dragPos.y);
+    // Determine direction using the total accumulated delta
+    const absX = Math.abs(dragDeltaRef.current.x);
+    const absY = Math.abs(dragDeltaRef.current.y);
 
     if (absX > SWIPE_THRESHOLD || absY > SWIPE_THRESHOLD) {
       // Swiped! Find dominant direction
       let dir: 'up'|'down'|'left'|'right' = 'right';
       if (absX > absY) {
-        dir = dragPos.x > 0 ? 'right' : 'left';
+        dir = dragDeltaRef.current.x > 0 ? 'right' : 'left';
       } else {
-        dir = dragPos.y > 0 ? 'down' : 'up';
+        dir = dragDeltaRef.current.y > 0 ? 'down' : 'up';
       }
       onSwipe?.(data.id, dir);
     } 
     
-    // Always reset drag pos - the parent will update gridPos if swipe was successful
-    setDragPos({ x: 0, y: 0 });
+    // Reset drag state in parent
+    onDrag?.(data.id, 0, 0);
+    dragDeltaRef.current = { x: 0, y: 0 };
   };
 
   // Visual Styling Logic
@@ -111,21 +118,22 @@ const Card: React.FC<CardProps> = ({
     }
     transformString = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
     transitionClass = 'transition-all duration-300 ease-in';
-  } else if (isDragging) {
-    // Dragging: Combine percentage-based grid position with pixel-based drag offset
+  } else if (isDragging || (dragOffset.x !== 0 || dragOffset.y !== 0)) {
+    // Dragging: Combine percentage-based grid position with pixel-based drag offset (passed via props)
     // 50% = 1 step
-    const rotation = dragPos.x * 0.05; // Slight tilt while dragging
-    transformString = `translate(calc(${gridPos.x * 50}% + ${dragPos.x}px), calc(${gridPos.y * 50}% + ${dragPos.y + depthY}px)) rotate(${rotation}deg) scale(${scale})`;
+    const rotation = dragOffset.x * 0.05; // Slight tilt while dragging
+    transformString = `translate(calc(${gridPos.x * 50}% + ${dragOffset.x}px), calc(${gridPos.y * 50}% + ${dragOffset.y + depthY}px)) rotate(${rotation}deg) scale(${scale})`;
     transitionClass = 'transition-none'; // Instant response
   } else {
     // Resting state: Purely calculated positions
     transformString = `translate(${gridPos.x * 50}%, calc(${gridPos.y * 50}% + ${depthY}px)) scale(${scale})`;
   }
   
-  // Helper to show swipe cues
+  // Helper to show swipe cues - only show on the card actively being touched (isDragging)
   const showSwipeCue = isDragging && isInteractable;
-  const absX = Math.abs(dragPos.x);
-  const absY = Math.abs(dragPos.y);
+  // Use dragOffset for cue logic to ensure it matches visual position
+  const displayAbsX = Math.abs(dragOffset.x);
+  const displayAbsY = Math.abs(dragOffset.y);
   
   return (
     <div
@@ -163,10 +171,10 @@ const Card: React.FC<CardProps> = ({
         {/* Direction Cues Overlay (Only while dragging) */}
         {showSwipeCue && (
             <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-                {absX > absY && dragPos.x > 50 && <ArrowRight size={64} className="text-white/80 drop-shadow-lg" />}
-                {absX > absY && dragPos.x < -50 && <ArrowLeft size={64} className="text-white/80 drop-shadow-lg" />}
-                {absY > absX && dragPos.y > 50 && <ArrowDown size={64} className="text-white/80 drop-shadow-lg" />}
-                {absY > absX && dragPos.y < -50 && <ArrowUp size={64} className="text-white/80 drop-shadow-lg" />}
+                {displayAbsX > displayAbsY && dragOffset.x > 50 && <ArrowRight size={64} className="text-white/80 drop-shadow-lg" />}
+                {displayAbsX > displayAbsY && dragOffset.x < -50 && <ArrowLeft size={64} className="text-white/80 drop-shadow-lg" />}
+                {displayAbsY > displayAbsX && dragOffset.y > 50 && <ArrowDown size={64} className="text-white/80 drop-shadow-lg" />}
+                {displayAbsY > displayAbsX && dragOffset.y < -50 && <ArrowUp size={64} className="text-white/80 drop-shadow-lg" />}
             </div>
         )}
 

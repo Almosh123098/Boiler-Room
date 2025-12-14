@@ -19,6 +19,9 @@ const App: React.FC = () => {
   const [exitingCardId, setExitingCardId] = useState<string | null>(null);
   const [exitDirection, setExitDirection] = useState<'up'|'down'|'left'|'right'|null>(null);
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
+  
+  // Drag State: { id: card being dragged, x/y: pixel offsets }
+  const [dragState, setDragState] = useState<{ id: string, x: number, y: number } | null>(null);
 
   // Initialize/Reset to Awake State
   const wakeUp = useCallback(() => {
@@ -27,6 +30,7 @@ const App: React.FC = () => {
     setIsShuffling(false);
     setIsAwake(true);
     setCardOffsets({}); // Reset puzzle
+    setDragState(null);
     setActiveStack([AWAKE_CARD]);
   }, []);
 
@@ -36,6 +40,7 @@ const App: React.FC = () => {
     setIsShuffling(true);
     setIsAwake(false);
     setCardOffsets({}); // Ensure clean slate
+    setDragState(null);
     
     // Create a temporary "dummy" stack for the visual shuffle effect
     setActiveStack([
@@ -52,6 +57,15 @@ const App: React.FC = () => {
       setActiveStack(newStack);
       setIsShuffling(false);
     }, 800);
+  }, []);
+
+  // Handle active drag from a card
+  const handleCardDrag = useCallback((id: string, x: number, y: number) => {
+    if (x === 0 && y === 0) {
+      setDragState(null);
+    } else {
+      setDragState({ id, x, y });
+    }
   }, []);
 
   // Handle Swipe Interaction
@@ -89,15 +103,15 @@ const App: React.FC = () => {
         }
 
         // Apply shift to the swiped card AND all cards above it (lower indices)
-        // This simulates the "Sticky Stack" mechanics where moving a bottom card 
-        // carries the stack on top of it.
+        // This locks the revealed configuration to the moving card.
         setCardOffsets(prev => {
             const nextOffsets = { ...prev };
             
             // Iterate from the top of the stack (0) down to the swiped card (cardIndex)
             for (let i = 0; i <= cardIndex; i++) {
-                const targetCardId = activeStack[i].id;
-                const targetCardType = activeStack[i].type;
+                const targetCard = activeStack[i];
+                const targetCardId = targetCard.id;
+                const targetCardType = targetCard.type;
                 
                 // Allow both boiler cards and the asleep cover to be moved in the stack
                 if (targetCardType === CardType.BOILER_ROOM || targetCardType === CardType.ASLEEP_COVER) {
@@ -119,6 +133,9 @@ const App: React.FC = () => {
   // Is this the "Boiler Room" phase? 
   // Any time we are asleep and not shuffling, we are in the interactive puzzle phase.
   const isBoilerPhase = !isAwake && !isShuffling && !isRoomEmpty;
+
+  // Calculate info for the render loop
+  const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
 
   return (
     <div className="relative w-full h-full min-h-screen bg-stone-950 flex flex-col items-center justify-between p-6 overflow-hidden">
@@ -151,8 +168,6 @@ const App: React.FC = () => {
 
       {/* Main Card Area */}
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-8">
-        {/* Scale container down slightly to ensure spread out cards fit on mobile screens */}
-        {/* Removed overflow-hidden to allow cards to extend visually outside the frame */}
         <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.85] sm:scale-100 transition-all duration-500 ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {/* Loading Overlay */}
@@ -183,28 +198,38 @@ const App: React.FC = () => {
             )}
 
             {/* Card Stack */}
-            {activeStack.map((card, index) => (
-                <Card 
-                    key={`${card.id}-${index}`} 
-                    data={card}
-                    index={index}
-                    totalCards={activeStack.length}
-                    onSwipe={handleCardSwipe}
-                    // Interaction Logic:
-                    // 1. Boiler Phase (Asleep): All cards are technically interactable. 
-                    //    Since they stack, you can only grab what is visible (exposed edges or top).
-                    // 2. Awake Phase: Only the top card is interactable.
-                    isInteractable={
-                        !isShuffling && 
-                        !exitingCardId && 
-                        (isBoilerPhase ? true : index === 0)
-                    }
-                    isExiting={card.id === exitingCardId}
-                    exitDirection={card.id === exitingCardId ? exitDirection : null}
-                    isShuffling={isShuffling}
-                    gridPos={cardOffsets[card.id] || {x: 0, y: 0}}
-                />
-            ))}
+            {activeStack.map((card, index) => {
+                // Determine visual offset for this card
+                let visualOffset = { x: 0, y: 0 };
+                // If a drag is active, and this card is "above" or "is" the dragged card (lower index = higher stack position)
+                if (dragState && index <= draggingCardIndex) {
+                    visualOffset = { x: dragState.x, y: dragState.y };
+                }
+
+                return (
+                  <Card 
+                      key={`${card.id}-${index}`} 
+                      data={card}
+                      index={index}
+                      totalCards={activeStack.length}
+                      onSwipe={handleCardSwipe}
+                      onDrag={handleCardDrag}
+                      dragOffset={visualOffset}
+                      // Interaction Logic:
+                      // 1. Boiler Phase (Asleep): All cards are interactable. 
+                      // 2. Awake Phase: Only the top card is interactable.
+                      isInteractable={
+                          !isShuffling && 
+                          !exitingCardId && 
+                          (isBoilerPhase ? true : index === 0)
+                      }
+                      isExiting={card.id === exitingCardId}
+                      exitDirection={card.id === exitingCardId ? exitDirection : null}
+                      isShuffling={isShuffling}
+                      gridPos={cardOffsets[card.id] || {x: 0, y: 0}}
+                  />
+                );
+            })}
             
             {/* Empty State placeholder behind cards */}
             {!isRoomEmpty && activeStack.length > 0 && !isShuffling && (
