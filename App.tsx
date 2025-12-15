@@ -138,7 +138,7 @@ const App: React.FC = () => {
   const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
 
   return (
-    <div className="relative w-full h-full min-h-screen bg-stone-950 flex flex-col items-center justify-between p-6 overflow-hidden">
+    <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between p-4 overflow-hidden">
       
       {/* Background Texture/Effects */}
       <div className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isAwake ? 'opacity-10' : 'opacity-30'}`}>
@@ -146,7 +146,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Header / Info */}
-      <header className="relative z-10 w-full flex justify-between items-center max-w-md mt-4 backdrop-blur-sm bg-black/20 p-4 rounded-xl border border-white/5">
+      <header className="relative z-10 w-full flex justify-between items-center max-w-md mt-2 backdrop-blur-sm bg-black/20 p-3 rounded-xl border border-white/5">
         <div className="flex items-center gap-3">
            {isAwake ? (
              <div className="p-2 bg-yellow-500/10 rounded-full">
@@ -179,8 +179,8 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Card Area */}
-      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-8">
-        <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.85] sm:scale-100 transition-all duration-500 ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
+      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-2">
+        <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.75] sm:scale-100 transition-all duration-500 ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {/* Loading Overlay */}
             {isShuffling && (
@@ -264,7 +264,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer Controls */}
-      <footer className="relative z-10 w-full max-w-md mb-16 flex flex-col gap-1">
+      <footer className="relative z-10 w-full max-w-md mb-6 flex flex-col gap-3">
         
         {/* Helper Text */}
         <div className="text-center h-6">
