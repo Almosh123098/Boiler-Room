@@ -180,7 +180,7 @@ const App: React.FC = () => {
 
       {/* Main Card Area */}
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-2">
-        <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.75] sm:scale-100 transition-all duration-500 ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
+        <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.85] sm:scale-100 transition-all duration-500 ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {/* Loading Overlay */}
             {isShuffling && (
@@ -264,7 +264,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer Controls */}
-      <footer className="relative z-10 w-full max-w-md mb-6 flex flex-col gap-3">
+      <footer className="relative z-10 w-full max-w-md mb-4 flex flex-col gap-3">
         
         {/* Helper Text */}
         <div className="text-center h-6">
