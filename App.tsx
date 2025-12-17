@@ -3,11 +3,14 @@ import { CardData, CardType } from './types';
 import { AWAKE_CARD, ASLEEP_COVER_CARD, BOILER_ROOM_DECK } from './constants';
 import { shuffleDeck } from './utils/deckUtils';
 import Card from './components/Card';
-import { Moon, Sun, AlertTriangle, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Loader, Coffee } from 'lucide-react';
+import { Moon, Sun, AlertTriangle, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Loader, Coffee, ZoomIn, ZoomOut } from 'lucide-react';
 
 const App: React.FC = () => {
   // State to track if the player is awake or asleep
   const [isAwake, setIsAwake] = useState<boolean>(true);
+  
+  // State to track zoom level for viewing the full puzzle
+  const [isZoomedOut, setIsZoomedOut] = useState<boolean>(false);
   
   // The current stack of cards being displayed
   const [activeStack, setActiveStack] = useState<CardData[]>([AWAKE_CARD]);
@@ -32,6 +35,7 @@ const App: React.FC = () => {
     setCardOffsets({}); // Reset puzzle
     setDragState(null);
     setActiveStack([AWAKE_CARD]);
+    setIsZoomedOut(false);
   }, []);
 
   // Trigger Falling Asleep Sequence
@@ -41,6 +45,7 @@ const App: React.FC = () => {
     setIsAwake(false);
     setCardOffsets({}); // Ensure clean slate
     setDragState(null);
+    setIsZoomedOut(false);
     
     // Create a temporary "dummy" stack for the visual shuffle effect
     setActiveStack([
@@ -137,6 +142,11 @@ const App: React.FC = () => {
   // Calculate info for the render loop
   const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
 
+  // Dynamic Scale Classes
+  const scaleClass = isZoomedOut 
+      ? 'scale-[0.5] sm:scale-60' 
+      : 'scale-[0.85] sm:scale-100';
+
   return (
     <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between p-4 overflow-hidden">
       
@@ -180,7 +190,7 @@ const App: React.FC = () => {
 
       {/* Main Card Area */}
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-2">
-        <div className={`relative w-72 h-[28rem] perspective-1000 scale-[0.85] sm:scale-100 transition-all duration-500 ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
+        <div className={`relative w-72 h-[28rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {/* Loading Overlay */}
             {isShuffling && (
@@ -279,15 +289,28 @@ const App: React.FC = () => {
             ) : null}
         </div>
 
-        {/* Global Reset/Emergency Button */}
-        <div className="flex justify-center">
+        {/* Control Buttons */}
+        <div className="flex justify-center items-center gap-4">
+            
+            {/* Zoom Toggle */}
+            {!isAwake && !isRoomEmpty && !isShuffling && (
+                 <button 
+                 onClick={() => setIsZoomedOut(!isZoomedOut)}
+                 className="flex items-center gap-2 text-stone-400 hover:text-yellow-400 hover:border-yellow-500/50 text-xs uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/40 backdrop-blur-md"
+             >
+                 {isZoomedOut ? <ZoomIn size={14} /> : <ZoomOut size={14} />}
+                 {isZoomedOut ? 'Zoom In' : 'Zoom Out'}
+             </button>
+            )}
+
+            {/* Wake Up Immediately */}
             {!isAwake && !isRoomEmpty && !isShuffling && (
                  <button 
                  onClick={wakeUp}
                  className="flex items-center gap-2 text-stone-600 hover:text-red-400 hover:border-red-900/50 text-xs uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/40 backdrop-blur-md"
              >
                  <Eye size={12} />
-                 Wake Up Immediately
+                 Wake Up
              </button>
             )}
         </div>
