@@ -174,18 +174,6 @@ const App: React.FC = () => {
              </span>
            </div>
         </div>
-
-        {/* Donate Button */}
-        <a 
-          href="https://buymeacoffee.com/madman123098"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-stone-800/50 hover:bg-yellow-500/10 text-stone-400 hover:text-yellow-400 transition-all border border-white/5 hover:border-yellow-500/30 group"
-          title="Buy me a coffee"
-        >
-          <Coffee size={18} className="group-hover:scale-110 transition-transform" />
-          <span className="text-xs font-bold uppercase tracking-wider">Donate</span>
-        </a>
       </header>
 
       {/* Main Card Area */}
