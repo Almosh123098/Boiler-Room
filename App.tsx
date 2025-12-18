@@ -137,7 +137,7 @@ const App: React.FC = () => {
   const isRoomEmpty = !isAwake && activeStack.length === 0 && !isShuffling;
   const isBoilerPhase = !isAwake && !isShuffling && !isRoomEmpty;
   const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
-  const scaleClass = isZoomedOut ? 'scale-[0.5] sm:scale-60' : 'scale-[0.8] sm:scale-100';
+  const scaleClass = isZoomedOut ? 'scale-[0.5] sm:scale-60' : 'scale-[0.75] sm:scale-90 md:scale-100';
 
   return (
     <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between p-4 overflow-hidden">
@@ -175,8 +175,9 @@ const App: React.FC = () => {
         </a>
       </header>
 
-      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-2 overflow-hidden">
-        <div className={`relative w-64 h-[24rem] sm:w-72 sm:h-[28rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
+      {/* Main container: Removing overflow-hidden to prevent card clipping during vertical swipes */}
+      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-4">
+        <div className={`relative w-64 h-[22rem] sm:w-72 sm:h-[28rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {isShuffling && (
                 <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 rounded-2xl backdrop-blur-sm animate-in fade-in duration-300">
@@ -224,10 +225,10 @@ const App: React.FC = () => {
 
       {/* D-Pad Interaction Area */}
       {!isAwake && !isShuffling && !isRoomEmpty && (
-        <div className="relative z-20 flex flex-col items-center gap-2 mb-2 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm">
+        <div className="relative z-20 flex flex-col items-center gap-2 mb-4 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm">
             
             {/* Quick Actions Panel */}
-            <div className="flex justify-center items-center gap-2 w-full px-8 mb-1">
+            <div className="flex justify-center items-center gap-2 w-full px-8 mb-2">
                 <button 
                     onClick={() => setIsZoomedOut(!isZoomedOut)}
                     className="flex items-center gap-2 text-stone-400 hover:text-yellow-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg"
@@ -241,7 +242,7 @@ const App: React.FC = () => {
                     className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 border rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg ${isDpadVisible ? 'text-red-400 border-red-900/40' : 'text-stone-400 border-stone-800'}`}
                     title={isDpadVisible ? "Hide Controls" : "Show Controls"}
                 >
-                    {isDpadVisible ? <Gamepad2 size={14} /> : <Gamepad2 size={14} className="opacity-50" />}
+                    <Gamepad2 size={14} className={isDpadVisible ? 'opacity-100' : 'opacity-50'} />
                 </button>
 
                 {/* Wake up button: only visible when D-pad is hidden */}
@@ -257,7 +258,7 @@ const App: React.FC = () => {
             </div>
 
             {isDpadVisible && (
-              <div className="flex flex-col items-center gap-2 w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="flex flex-col items-center gap-2 w-full animate-in fade-in slide-in-from-bottom-4 duration-300 mb-2">
                 <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-stone-900 rounded-full border-4 border-stone-800 shadow-[0_0_40px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(0,0,0,0.5)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800/20 to-transparent"></div>
                     
@@ -279,19 +280,6 @@ const App: React.FC = () => {
                     <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={24} className="sm:w-7 sm:h-7" /></button>
                     <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={24} className="sm:w-7 sm:h-7" /></button>
                 </div>
-
-                {/* Step Indicators */}
-                <div className="flex gap-2 text-[8px] sm:text-[9px] font-black tracking-[0.2em] text-stone-700 uppercase mb-1">
-                    <span className={cursorIndex === 0 ? "text-red-500 animate-pulse" : ""}>STEP 1</span>
-                    <span>•</span>
-                    <span className={cursorIndex === 1 ? "text-red-500 animate-pulse" : ""}>STEP 2</span>
-                    <span>•</span>
-                    <span className={cursorIndex === 2 ? "text-red-500 animate-pulse" : ""}>STEP 3</span>
-                    <span>•</span>
-                    <span className={cursorIndex === 3 ? "text-red-500 animate-pulse" : ""}>STEP 4</span>
-                    <span>•</span>
-                    <span className={cursorIndex === 4 ? "text-red-500 animate-pulse" : ""}>STEP 5</span>
-                </div>
               </div>
             )}
         </div>
@@ -303,8 +291,6 @@ const App: React.FC = () => {
                 <p className="text-red-400 text-xs font-black animate-pulse tracking-[0.3em] uppercase">MANIFESTING NIGHTMARE...</p>
             ) : isAwake ? (
                  <p className="text-stone-600 text-[10px] font-bold uppercase tracking-widest animate-pulse">Swipe card to fall asleep...</p>
-            ) : isBoilerPhase ? (
-                 <p className="text-stone-500 text-[9px] font-black uppercase tracking-widest opacity-50">Locked to Card {cursorIndex + 1} of {activeStack.length}</p>
             ) : null}
         </div>
       </footer>
