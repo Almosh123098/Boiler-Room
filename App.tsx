@@ -8,11 +8,6 @@ import {
   Sun, 
   AlertTriangle, 
   Eye, 
-  EyeOff,
-  ArrowUp, 
-  ArrowDown, 
-  ArrowLeft, 
-  ArrowRight, 
   Loader, 
   ZoomIn, 
   ZoomOut, 
@@ -61,7 +56,6 @@ const App: React.FC = () => {
     setActiveStack([AWAKE_CARD]);
     setIsZoomedOut(false);
     setCursorIndex(0);
-    // Note: We don't reset isDpadVisible here because we want to "remember" the choice
   }, []);
 
   const fallAsleepSequence = useCallback(() => {
@@ -149,7 +143,6 @@ const App: React.FC = () => {
   const isBoilerPhase = !isAwake && !isShuffling && !isRoomEmpty;
   const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
   
-  // Generous scaling for better visibility while ensuring space for controls
   const scaleClass = isZoomedOut 
     ? 'scale-[0.5] sm:scale-60' 
     : isDpadVisible 
@@ -157,12 +150,12 @@ const App: React.FC = () => {
       : 'scale-[0.85] sm:scale-100';
 
   return (
-    <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between p-4 overflow-hidden">
+    <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between pt-4 px-4 pb-[15px] overflow-hidden">
       <div className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isAwake ? 'opacity-10' : 'opacity-30'}`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-900 via-stone-950 to-black"></div>
       </div>
 
-      <header className="relative z-10 w-full flex justify-between items-center max-w-md mt-2 backdrop-blur-sm bg-black/20 p-3 rounded-xl border border-white/5">
+      <header className="relative z-10 w-full flex justify-between items-center max-w-md mt-2 backdrop-blur-sm bg-black/20 p-3 rounded-xl border border-white/5 shrink-0">
         <div className="flex items-center gap-3">
            {isAwake ? (
              <div className="p-2 bg-yellow-500/10 rounded-full">
@@ -192,8 +185,8 @@ const App: React.FC = () => {
         </a>
       </header>
 
-      {/* Restore larger card container dimensions */}
-      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-4">
+      {/* Reduced py-2 to py-0 to squeeze the layout slightly */}
+      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-0">
         <div className={`relative w-72 h-[28rem] sm:w-80 sm:h-[32rem] md:w-80 md:h-[32rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {isShuffling && (
@@ -240,12 +233,12 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* D-Pad Interaction Area */}
+      {/* D-Pad Interaction Area - Reduced gap from 1 to 0 */}
       {!isAwake && !isShuffling && !isRoomEmpty && (
-        <div className="relative z-20 flex flex-col items-center gap-2 mb-4 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm">
+        <div className="relative z-20 flex flex-col items-center gap-0 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm shrink-0">
             
-            {/* Quick Actions Panel */}
-            <div className="flex justify-center items-center gap-2 w-full px-8 mb-2">
+            {/* Quick Actions Panel - Reduced mb-1/2 to mb-0 */}
+            <div className={`flex justify-center items-center gap-2 w-full px-8 mb-0`}>
                 <button 
                     onClick={() => setIsZoomedOut(!isZoomedOut)}
                     className="flex items-center gap-2 text-stone-400 hover:text-yellow-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg"
@@ -262,50 +255,50 @@ const App: React.FC = () => {
                     <Gamepad2 size={14} className={isDpadVisible ? 'opacity-100' : 'opacity-50'} />
                 </button>
 
-                {/* Wake up button: only visible when D-pad is hidden */}
                 {!isDpadVisible && (
                   <button 
                       onClick={wakeUp}
                       className="flex items-center gap-2 text-stone-600 hover:text-red-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg animate-in fade-in zoom-in duration-300"
                   >
-                      <Eye size={14} />
+                      <RotateCcw size={14} />
                       Wake Up
                   </button>
                 )}
             </div>
 
             {isDpadVisible && (
-              <div className="flex flex-col items-center gap-2 w-full animate-in fade-in slide-in-from-bottom-4 duration-300 mb-2">
-                <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-stone-900 rounded-full border-4 border-stone-800 shadow-[0_0_40px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(0,0,0,0.5)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800/20 to-transparent"></div>
+              <div className="flex flex-col items-center gap-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-300 mb-0">
+                {/* D-Pad Circle - Made transparent with bg-stone-900/40 and backdrop-blur-md */}
+                <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-stone-900/40 backdrop-blur-md rounded-full border-4 border-stone-800/60 shadow-[0_0_40px_rgba(0,0,0,0.6),inset_0_0_20px_rgba(0,0,0,0.3)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800/10 to-transparent"></div>
                     
                     {/* D-Pad Buttons */}
-                    <button onClick={() => handleDpadPress('up')} className="col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-t-xl transition-all z-10"><ChevronUp size={24} className="sm:w-7 sm:h-7" /></button>
-                    <button onClick={() => handleDpadPress('left')} className="row-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-l-xl transition-all z-10"><ChevronLeft size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('up')} className="col-start-2 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-t-xl transition-all z-10"><ChevronUp size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('left')} className="row-start-2 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-l-xl transition-all z-10"><ChevronLeft size={24} className="sm:w-7 sm:h-7" /></button>
                     
-                    {/* Center RESET/WAKE Button (RotateCcw) */}
                     <button 
                       onClick={wakeUp} 
                       title="Wake Up Immediately"
                       className="row-start-2 col-start-2 flex items-center justify-center group active:scale-90 transition-transform z-20"
                     >
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-stone-800 border-2 border-stone-700 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] group-hover:border-red-500 group-active:bg-red-500 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-stone-800/80 border-2 border-stone-700/60 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.3)] group-hover:border-red-500 group-active:bg-red-500 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">
                             <RotateCcw size={16} className="text-stone-500 group-hover:text-red-100 transition-all duration-300 sm:w-5 sm:h-5" />
                         </div>
                     </button>
 
-                    <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={24} className="sm:w-7 sm:h-7" /></button>
-                    <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={24} className="sm:w-7 sm:h-7" /></button>
                 </div>
               </div>
             )}
         </div>
       )}
 
-      <footer className="relative z-10 w-full max-w-md mb-2 flex flex-col items-center gap-1">
+      {/* Footer area pushed to the absolute bottom margin of the screen */}
+      <footer className="relative z-10 w-full max-w-md shrink-0 flex flex-col items-center">
         <div className="text-center h-4">
             {isShuffling ? (
-                <p className="text-red-400 text-xs font-black animate-pulse tracking-[0.3em] uppercase">MANIFESTING NIGHTMARE...</p>
+                <p className="text-red-400 text-[10px] font-black animate-pulse tracking-[0.3em] uppercase">MANIFESTING NIGHTMARE...</p>
             ) : isAwake ? (
                  <p className="text-stone-600 text-[10px] font-bold uppercase tracking-widest animate-pulse">Swipe card to fall asleep...</p>
             ) : null}
