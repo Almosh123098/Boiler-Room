@@ -3,7 +3,7 @@ import { CardData, CardType } from './types';
 import { AWAKE_CARD, ASLEEP_COVER_CARD, BOILER_ROOM_DECK } from './constants';
 import { shuffleDeck } from './utils/deckUtils';
 import Card from './components/Card';
-import { Moon, Sun, AlertTriangle, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Loader, Coffee, ZoomIn, ZoomOut } from 'lucide-react';
+import { Moon, Sun, AlertTriangle, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Loader, ZoomIn, ZoomOut, Heart } from 'lucide-react';
 
 const App: React.FC = () => {
   // State to track if the player is awake or asleep
@@ -14,6 +14,7 @@ const App: React.FC = () => {
   
   // The current stack of cards being displayed
   const [activeStack, setActiveStack] = useState<CardData[]>([AWAKE_CARD]);
+
   // Position offsets for boiler room cards (Puzzle mechanics)
   // Storing steps (integers) instead of pixels. 1 step = 50% width/height.
   const [cardOffsets, setCardOffsets] = useState<Record<string, {x: number, y: number}>>({});
@@ -174,6 +175,17 @@ const App: React.FC = () => {
              </span>
            </div>
         </div>
+
+        {/* Support/Donate Button */}
+        <a 
+          href="https://buymeacoffee.com/madman123098"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 bg-stone-100/10 hover:bg-stone-100/20 text-stone-300 border border-stone-100/10 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all hover:scale-105 active:scale-95"
+        >
+          <Heart size={12} className="text-red-500 fill-red-500" />
+          SUPPORT
+        </a>
       </header>
 
       {/* Main Card Area */}
@@ -262,7 +274,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer Controls */}
-      <footer className="relative z-10 w-full max-w-md mb-4 flex flex-col gap-3">
+      <footer className="relative z-10 w-full max-w-md mb-4 flex flex-col items-center gap-4">
         
         {/* Helper Text */}
         <div className="text-center h-6">
@@ -273,11 +285,11 @@ const App: React.FC = () => {
             ) : !isRoomEmpty && activeStack[0]?.type === CardType.ASLEEP_COVER ? (
                  <p className="text-red-900/50 text-sm font-bold uppercase tracking-widest">Swipe to reveal boiler room</p>
             ) : isBoilerPhase ? (
-                <p className="text-stone-500 text-sm">Slide cards to reveal hidden paths</p>
+                 <p className="text-stone-500 text-sm">Slide cards to reveal hidden paths</p>
             ) : null}
         </div>
 
-        {/* Control Buttons */}
+        {/* Control Buttons (Secondary) */}
         <div className="flex justify-center items-center gap-4">
             
             {/* Zoom Toggle */}
