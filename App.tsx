@@ -137,7 +137,7 @@ const App: React.FC = () => {
   const isRoomEmpty = !isAwake && activeStack.length === 0 && !isShuffling;
   const isBoilerPhase = !isAwake && !isShuffling && !isRoomEmpty;
   const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
-  const scaleClass = isZoomedOut ? 'scale-[0.5] sm:scale-60' : 'scale-[0.85] sm:scale-100';
+  const scaleClass = isZoomedOut ? 'scale-[0.5] sm:scale-60' : 'scale-[0.8] sm:scale-100';
 
   return (
     <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between p-4 overflow-hidden">
@@ -175,8 +175,8 @@ const App: React.FC = () => {
         </a>
       </header>
 
-      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-2">
-        <div className={`relative w-72 h-[28rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
+      <main className="relative z-10 flex-1 w-full flex items-center justify-center py-2 overflow-hidden">
+        <div className={`relative w-64 h-[24rem] sm:w-72 sm:h-[28rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {isShuffling && (
                 <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 rounded-2xl backdrop-blur-sm animate-in fade-in duration-300">
@@ -224,7 +224,7 @@ const App: React.FC = () => {
 
       {/* D-Pad Interaction Area */}
       {!isAwake && !isShuffling && !isRoomEmpty && (
-        <div className="relative z-20 flex flex-col items-center gap-4 mb-4 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm">
+        <div className="relative z-20 flex flex-col items-center gap-2 mb-2 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm">
             
             {/* Quick Actions Panel */}
             <div className="flex justify-center items-center gap-2 w-full px-8 mb-1">
@@ -257,31 +257,31 @@ const App: React.FC = () => {
             </div>
 
             {isDpadVisible && (
-              <div className="flex flex-col items-center gap-4 w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <div className="relative w-36 h-36 bg-stone-900 rounded-full border-4 border-stone-800 shadow-[0_0_50px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(0,0,0,0.5)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
+              <div className="flex flex-col items-center gap-2 w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-stone-900 rounded-full border-4 border-stone-800 shadow-[0_0_40px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(0,0,0,0.5)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800/20 to-transparent"></div>
                     
                     {/* D-Pad Buttons */}
-                    <button onClick={() => handleDpadPress('up')} className="col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-t-xl transition-all z-10"><ChevronUp size={28} /></button>
-                    <button onClick={() => handleDpadPress('left')} className="row-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-l-xl transition-all z-10"><ChevronLeft size={28} /></button>
+                    <button onClick={() => handleDpadPress('up')} className="col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-t-xl transition-all z-10"><ChevronUp size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('left')} className="row-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-l-xl transition-all z-10"><ChevronLeft size={24} className="sm:w-7 sm:h-7" /></button>
                     
-                    {/* Center WAKE UP Button (now using refresh icon) */}
+                    {/* Center RESET/WAKE Button (RotateCcw) */}
                     <button 
                       onClick={wakeUp} 
                       title="Wake Up Immediately"
                       className="row-start-2 col-start-2 flex items-center justify-center group active:scale-90 transition-transform z-20"
                     >
-                        <div className="w-10 h-10 rounded-full bg-stone-800 border-2 border-stone-700 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] group-hover:border-red-500 group-active:bg-red-500 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">
-                            <RotateCcw size={18} className="text-stone-500 group-hover:text-red-100 transition-all duration-300" />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-stone-800 border-2 border-stone-700 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] group-hover:border-red-500 group-active:bg-red-500 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">
+                            <RotateCcw size={16} className="text-stone-500 group-hover:text-red-100 transition-all duration-300 sm:w-5 sm:h-5" />
                         </div>
                     </button>
 
-                    <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={28} /></button>
-                    <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={28} /></button>
+                    <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={24} className="sm:w-7 sm:h-7" /></button>
                 </div>
 
                 {/* Step Indicators */}
-                <div className="flex gap-2 text-[9px] font-black tracking-[0.2em] text-stone-700 uppercase">
+                <div className="flex gap-2 text-[8px] sm:text-[9px] font-black tracking-[0.2em] text-stone-700 uppercase mb-1">
                     <span className={cursorIndex === 0 ? "text-red-500 animate-pulse" : ""}>STEP 1</span>
                     <span>•</span>
                     <span className={cursorIndex === 1 ? "text-red-500 animate-pulse" : ""}>STEP 2</span>
@@ -297,7 +297,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <footer className="relative z-10 w-full max-w-md mb-2 flex flex-col items-center gap-2">
+      <footer className="relative z-10 w-full max-w-md mb-2 flex flex-col items-center gap-1">
         <div className="text-center h-4">
             {isShuffling ? (
                 <p className="text-red-400 text-xs font-black animate-pulse tracking-[0.3em] uppercase">MANIFESTING NIGHTMARE...</p>
