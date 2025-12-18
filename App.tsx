@@ -150,7 +150,7 @@ const App: React.FC = () => {
       : 'scale-[0.85] sm:scale-100';
 
   return (
-    <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between pt-4 px-4 pb-[15px] overflow-hidden">
+    <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between pt-4 px-4 pb-[20px] overflow-hidden">
       <div className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isAwake ? 'opacity-10' : 'opacity-30'}`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-900 via-stone-950 to-black"></div>
       </div>
@@ -185,7 +185,6 @@ const App: React.FC = () => {
         </a>
       </header>
 
-      {/* Reduced py-2 to py-0 to squeeze the layout slightly */}
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-0">
         <div className={`relative w-72 h-[28rem] sm:w-80 sm:h-[32rem] md:w-80 md:h-[32rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
@@ -233,11 +232,11 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* D-Pad Interaction Area - Reduced gap from 1 to 0 */}
+      {/* D-Pad Interaction Area - Increased gap to 5px */}
       {!isAwake && !isShuffling && !isRoomEmpty && (
-        <div className="relative z-20 flex flex-col items-center gap-0 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm shrink-0">
+        <div className="relative z-20 flex flex-col items-center gap-[5px] animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm shrink-0">
             
-            {/* Quick Actions Panel - Reduced mb-1/2 to mb-0 */}
+            {/* Quick Actions Panel */}
             <div className={`flex justify-center items-center gap-2 w-full px-8 mb-0`}>
                 <button 
                     onClick={() => setIsZoomedOut(!isZoomedOut)}
@@ -294,7 +293,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Footer area pushed to the absolute bottom margin of the screen */}
       <footer className="relative z-10 w-full max-w-md shrink-0 flex flex-col items-center">
         <div className="text-center h-4">
             {isShuffling ? (
