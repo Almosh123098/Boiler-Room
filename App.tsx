@@ -3,7 +3,7 @@ import { CardData, CardType } from './types';
 import { AWAKE_CARD, ASLEEP_COVER_CARD, BOILER_ROOM_DECK } from './constants';
 import { shuffleDeck } from './utils/deckUtils';
 import Card from './components/Card';
-import { Moon, Sun, AlertTriangle, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Loader, ZoomIn, ZoomOut, Heart } from 'lucide-react';
+import { Moon, Sun, AlertTriangle, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Loader, ZoomIn, ZoomOut, Coffee } from 'lucide-react';
 
 const App: React.FC = () => {
   // State to track if the player is awake or asleep
@@ -183,7 +183,7 @@ const App: React.FC = () => {
           rel="noopener noreferrer"
           className="flex items-center gap-2 bg-stone-100/10 hover:bg-stone-100/20 text-stone-300 border border-stone-100/10 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all hover:scale-105 active:scale-95"
         >
-          <Heart size={12} className="text-red-500 fill-red-500" />
+          <Coffee size={12} className="text-yellow-500" />
           SUPPORT
         </a>
       </header>
