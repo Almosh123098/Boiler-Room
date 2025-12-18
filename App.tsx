@@ -3,69 +3,78 @@ import { CardData, CardType } from './types';
 import { AWAKE_CARD, ASLEEP_COVER_CARD, BOILER_ROOM_DECK } from './constants';
 import { shuffleDeck } from './utils/deckUtils';
 import Card from './components/Card';
-import { Moon, Sun, AlertTriangle, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Loader, ZoomIn, ZoomOut, Coffee } from 'lucide-react';
+import { 
+  Moon, 
+  Sun, 
+  AlertTriangle, 
+  Eye, 
+  EyeOff,
+  ArrowUp, 
+  ArrowDown, 
+  ArrowLeft, 
+  ArrowRight, 
+  Loader, 
+  ZoomIn, 
+  ZoomOut, 
+  Coffee, 
+  ChevronUp, 
+  ChevronDown, 
+  ChevronLeft, 
+  ChevronRight, 
+  RotateCcw,
+  Gamepad2
+} from 'lucide-react';
 
 const App: React.FC = () => {
-  // State to track if the player is awake or asleep
   const [isAwake, setIsAwake] = useState<boolean>(true);
-  
-  // State to track zoom level for viewing the full puzzle
   const [isZoomedOut, setIsZoomedOut] = useState<boolean>(false);
-  
-  // The current stack of cards being displayed
+  const [isDpadVisible, setIsDpadVisible] = useState<boolean>(false);
   const [activeStack, setActiveStack] = useState<CardData[]>([AWAKE_CARD]);
-
-  // Position offsets for boiler room cards (Puzzle mechanics)
-  // Storing steps (integers) instead of pixels. 1 step = 50% width/height.
   const [cardOffsets, setCardOffsets] = useState<Record<string, {x: number, y: number}>>({});
   
-  // Animation state
+  // D-Pad Sequential Logic
+  const [cursorIndex, setCursorIndex] = useState<number>(0);
+
   const [exitingCardId, setExitingCardId] = useState<string | null>(null);
   const [exitDirection, setExitDirection] = useState<'up'|'down'|'left'|'right'|null>(null);
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
-  
-  // Drag State: { id: card being dragged, x/y: pixel offsets }
   const [dragState, setDragState] = useState<{ id: string, x: number, y: number } | null>(null);
 
-  // Initialize/Reset to Awake State
   const wakeUp = useCallback(() => {
     setExitingCardId(null);
     setExitDirection(null);
     setIsShuffling(false);
     setIsAwake(true);
-    setCardOffsets({}); // Reset puzzle
+    setCardOffsets({});
     setDragState(null);
     setActiveStack([AWAKE_CARD]);
     setIsZoomedOut(false);
+    setCursorIndex(0);
+    setIsDpadVisible(false); // Ensure d-pad is hidden by default next time
   }, []);
 
-  // Trigger Falling Asleep Sequence
   const fallAsleepSequence = useCallback(() => {
-    // 1. Set Shuffling State
     setIsShuffling(true);
     setIsAwake(false);
-    setCardOffsets({}); // Ensure clean slate
+    setCardOffsets({});
     setDragState(null);
     setIsZoomedOut(false);
+    setCursorIndex(0);
     
-    // Create a temporary "dummy" stack for the visual shuffle effect
+    // Preliminary visual stack for animation
     setActiveStack([
       ASLEEP_COVER_CARD, 
-      BOILER_ROOM_DECK[0], 
-      BOILER_ROOM_DECK[1]
+      ...BOILER_ROOM_DECK.slice(0, 2)
     ]);
     
-    // 2. Wait for shuffle animation (e.g., 800ms)
     setTimeout(() => {
       const shuffledBoiler = shuffleDeck(BOILER_ROOM_DECK);
       const newStack = [ASLEEP_COVER_CARD, ...shuffledBoiler];
-      
       setActiveStack(newStack);
       setIsShuffling(false);
     }, 800);
   }, []);
 
-  // Handle active drag from a card
   const handleCardDrag = useCallback((id: string, x: number, y: number) => {
     if (x === 0 && y === 0) {
       setDragState(null);
@@ -74,33 +83,25 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Handle Swipe Interaction
-  const handleCardSwipe = (id: string, direction: 'up' | 'down' | 'left' | 'right') => {
-    // Prevent interaction during animations
+  const handleCardSwipe = (id: string, direction: 'up' | 'down' | 'left' | 'right', fromDpad = false) => {
     if (exitingCardId || isShuffling) return;
 
     const cardIndex = activeStack.findIndex(c => c.id === id);
     if (cardIndex === -1) return;
     const card = activeStack[cardIndex];
 
-    // --- Logic for Exit-type cards (Only AWAKE now) ---
     if (card.type === CardType.AWAKE) {
         setExitingCardId(id);
         setExitDirection(direction);
-
-        // Wait for exit animation to complete
         setTimeout(() => {
             setExitingCardId(null);
             setExitDirection(null);
             fallAsleepSequence();
         }, 300);
     } 
-    // --- Logic for Puzzle cards (Boiler Room & Asleep Cover) ---
     else if (card.type === CardType.BOILER_ROOM || card.type === CardType.ASLEEP_COVER) {
-        // Use integer steps for 50% shifts
         let dx = 0;
         let dy = 0;
-
         switch(direction) {
             case 'left': dx = -1; break;
             case 'right': dx = 1; break;
@@ -108,55 +109,42 @@ const App: React.FC = () => {
             case 'down': dy = 1; break;
         }
 
-        // Apply shift to the swiped card AND all cards above it (lower indices)
-        // This locks the revealed configuration to the moving card.
         setCardOffsets(prev => {
             const nextOffsets = { ...prev };
-            
-            // Iterate from the top of the stack (0) down to the swiped card (cardIndex)
             for (let i = 0; i <= cardIndex; i++) {
                 const targetCard = activeStack[i];
-                const targetCardId = targetCard.id;
-                const targetCardType = targetCard.type;
-                
-                // Allow both boiler cards and the asleep cover to be moved in the stack
-                if (targetCardType === CardType.BOILER_ROOM || targetCardType === CardType.ASLEEP_COVER) {
-                    const current = nextOffsets[targetCardId] || { x: 0, y: 0 };
-                    nextOffsets[targetCardId] = {
-                        x: current.x + dx,
-                        y: current.y + dy
-                    };
-                }
+                const current = nextOffsets[targetCard.id] || { x: 0, y: 0 };
+                nextOffsets[targetCard.id] = { x: current.x + dx, y: current.y + dy };
             }
             return nextOffsets;
         });
+
+        // Advance cursor if using D-pad or swiping the currently targeted card
+        if (fromDpad || cardIndex === cursorIndex) {
+          setCursorIndex(prev => Math.min(prev + 1, activeStack.length - 1));
+        }
     }
   };
 
-  // derived state for empty room
+  const handleDpadPress = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (activeStack.length === 0 || isShuffling) return;
+    const currentCard = activeStack[cursorIndex];
+    if (currentCard) {
+      handleCardSwipe(currentCard.id, direction, true);
+    }
+  };
+
   const isRoomEmpty = !isAwake && activeStack.length === 0 && !isShuffling;
-  
-  // Is this the "Boiler Room" phase? 
-  // Any time we are asleep and not shuffling, we are in the interactive puzzle phase.
   const isBoilerPhase = !isAwake && !isShuffling && !isRoomEmpty;
-
-  // Calculate info for the render loop
   const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
-
-  // Dynamic Scale Classes
-  const scaleClass = isZoomedOut 
-      ? 'scale-[0.5] sm:scale-60' 
-      : 'scale-[0.85] sm:scale-100';
+  const scaleClass = isZoomedOut ? 'scale-[0.5] sm:scale-60' : 'scale-[0.85] sm:scale-100';
 
   return (
     <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between p-4 overflow-hidden">
-      
-      {/* Background Texture/Effects */}
       <div className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isAwake ? 'opacity-10' : 'opacity-30'}`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-900 via-stone-950 to-black"></div>
       </div>
 
-      {/* Header / Info */}
       <header className="relative z-10 w-full flex justify-between items-center max-w-md mt-2 backdrop-blur-sm bg-black/20 p-3 rounded-xl border border-white/5">
         <div className="flex items-center gap-3">
            {isAwake ? (
@@ -176,7 +164,6 @@ const App: React.FC = () => {
            </div>
         </div>
 
-        {/* Support/Donate Button */}
         <a 
           href="https://buymeacoffee.com/madman123098"
           target="_blank"
@@ -188,11 +175,9 @@ const App: React.FC = () => {
         </a>
       </header>
 
-      {/* Main Card Area */}
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-2">
         <div className={`relative w-72 h-[28rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
-            {/* Loading Overlay */}
             {isShuffling && (
                 <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 rounded-2xl backdrop-blur-sm animate-in fade-in duration-300">
                     <Loader size={48} className="text-red-600 animate-spin mb-4" />
@@ -200,7 +185,6 @@ const App: React.FC = () => {
                 </div>
             )}
 
-            {/* If room is empty, show empty state message */}
             {isRoomEmpty && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 animate-in fade-in zoom-in duration-500 z-20">
                     <div className="mb-6 relative">
@@ -208,111 +192,120 @@ const App: React.FC = () => {
                         <AlertTriangle size={64} className="text-red-500 relative z-10 drop-shadow-lg" />
                     </div>
                     <h2 className="text-3xl font-black text-white mb-2 tracking-tight">BOILER ROOM CLEAR</h2>
-                    <p className="text-stone-400 mb-8 max-w-[200px] leading-relaxed">The nightmare has ended... for now.</p>
                     <button 
                         onClick={wakeUp}
-                        className="group flex items-center gap-3 bg-stone-100 text-stone-900 px-8 py-4 rounded-full font-black tracking-wider shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-105 transition-all active:scale-95"
+                        className="group flex items-center gap-3 bg-stone-100 text-stone-900 px-8 py-4 rounded-full font-black tracking-wider shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-105 transition-all"
                     >
-                        <Sun size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+                        <Sun size={20} className="group-hover:rotate-90 transition-transform" />
                         WAKE UP
                     </button>
                 </div>
             )}
 
-            {/* Card Stack */}
-            {activeStack.map((card, index) => {
-                // Determine visual offset for this card
-                let visualOffset = { x: 0, y: 0 };
-                // If a drag is active, and this card is "above" or "is" the dragged card (lower index = higher stack position)
-                if (dragState && index <= draggingCardIndex) {
-                    visualOffset = { x: dragState.x, y: dragState.y };
-                }
-
-                return (
-                  <Card 
-                      key={`${card.id}-${index}`} 
-                      data={card}
-                      index={index}
-                      totalCards={activeStack.length}
-                      onSwipe={handleCardSwipe}
-                      onDrag={handleCardDrag}
-                      dragOffset={visualOffset}
-                      // Interaction Logic:
-                      // 1. Boiler Phase (Asleep): All cards are interactable. 
-                      // 2. Awake Phase: Only the top card is interactable.
-                      isInteractable={
-                          !isShuffling && 
-                          !exitingCardId && 
-                          (isBoilerPhase ? true : index === 0)
-                      }
-                      isExiting={card.id === exitingCardId}
-                      exitDirection={card.id === exitingCardId ? exitDirection : null}
-                      isShuffling={isShuffling}
-                      gridPos={cardOffsets[card.id] || {x: 0, y: 0}}
-                  />
-                );
-            })}
-            
-            {/* Empty State placeholder behind cards */}
-            {!isRoomEmpty && activeStack.length > 0 && !isShuffling && (
-                <div className="absolute inset-0 border-2 border-dashed border-stone-800 rounded-2xl -z-10 opacity-30 flex items-center justify-center bg-black/20">
-                    <div className="flex flex-col items-center gap-2 opacity-50">
-                        <div className="flex gap-4">
-                           <ArrowUp className="text-stone-500" />
-                        </div>
-                        <div className="flex gap-8">
-                           <ArrowLeft className="text-stone-500" />
-                           <ArrowRight className="text-stone-500" />
-                        </div>
-                        <div className="flex gap-4">
-                           <ArrowDown className="text-stone-500" />
-                        </div>
-                    </div>
-                </div>
-            )}
+            {activeStack.map((card, index) => (
+                <Card 
+                    key={`${card.id}-${index}`} 
+                    data={card}
+                    index={index}
+                    totalCards={activeStack.length}
+                    onSwipe={handleCardSwipe}
+                    onDrag={handleCardDrag}
+                    dragOffset={dragState && index <= draggingCardIndex ? { x: dragState.x, y: dragState.y } : { x: 0, y: 0 }}
+                    isInteractable={!isShuffling && !exitingCardId && (isBoilerPhase ? true : index === 0)}
+                    isExiting={card.id === exitingCardId}
+                    exitDirection={card.id === exitingCardId ? exitDirection : null}
+                    isShuffling={isShuffling}
+                    gridPos={cardOffsets[card.id] || {x: 0, y: 0}}
+                    isTargeted={isBoilerPhase && index === cursorIndex}
+                />
+            ))}
         </div>
       </main>
 
-      {/* Footer Controls */}
-      <footer className="relative z-10 w-full max-w-md mb-4 flex flex-col items-center gap-4">
-        
-        {/* Helper Text */}
-        <div className="text-center h-6">
-            {isShuffling ? (
-                <p className="text-red-400 text-sm font-bold animate-pulse tracking-widest">SHUFFLING BOILER ROOM...</p>
-            ) : isAwake ? (
-                 <p className="text-stone-500 text-sm animate-pulse">Swipe card to fall asleep...</p>
-            ) : !isRoomEmpty && activeStack[0]?.type === CardType.ASLEEP_COVER ? (
-                 <p className="text-red-900/50 text-sm font-bold uppercase tracking-widest">Swipe to reveal boiler room</p>
-            ) : isBoilerPhase ? (
-                 <p className="text-stone-500 text-sm">Slide cards to reveal hidden paths</p>
-            ) : null}
-        </div>
-
-        {/* Control Buttons (Secondary) */}
-        <div className="flex justify-center items-center gap-4">
+      {/* D-Pad Interaction Area */}
+      {!isAwake && !isShuffling && !isRoomEmpty && (
+        <div className="relative z-20 flex flex-col items-center gap-4 mb-4 animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm">
             
-            {/* Zoom Toggle */}
-            {!isAwake && !isRoomEmpty && !isShuffling && (
-                 <button 
-                 onClick={() => setIsZoomedOut(!isZoomedOut)}
-                 className="flex items-center gap-2 text-stone-400 hover:text-yellow-400 hover:border-yellow-500/50 text-xs uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/40 backdrop-blur-md"
-             >
-                 {isZoomedOut ? <ZoomIn size={14} /> : <ZoomOut size={14} />}
-                 {isZoomedOut ? 'Zoom In' : 'Zoom Out'}
-             </button>
-            )}
+            {/* Quick Actions Panel */}
+            <div className="flex justify-center items-center gap-2 w-full px-8 mb-1">
+                <button 
+                    onClick={() => setIsZoomedOut(!isZoomedOut)}
+                    className="flex items-center gap-2 text-stone-400 hover:text-yellow-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg"
+                    title={isZoomedOut ? "Zoom In" : "Zoom Out"}
+                >
+                    {isZoomedOut ? <ZoomIn size={14} /> : <ZoomOut size={14} />}
+                </button>
 
-            {/* Wake Up Immediately */}
-            {!isAwake && !isRoomEmpty && !isShuffling && (
-                 <button 
-                 onClick={wakeUp}
-                 className="flex items-center gap-2 text-stone-600 hover:text-red-400 hover:border-red-900/50 text-xs uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/40 backdrop-blur-md"
-             >
-                 <Eye size={12} />
-                 Wake Up
-             </button>
+                <button 
+                    onClick={() => setIsDpadVisible(!isDpadVisible)}
+                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 border rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg ${isDpadVisible ? 'text-red-400 border-red-900/40' : 'text-stone-400 border-stone-800'}`}
+                    title={isDpadVisible ? "Hide Controls" : "Show Controls"}
+                >
+                    {isDpadVisible ? <Gamepad2 size={14} /> : <Gamepad2 size={14} className="opacity-50" />}
+                </button>
+
+                {/* Wake up button: only visible when D-pad is hidden */}
+                {!isDpadVisible && (
+                  <button 
+                      onClick={wakeUp}
+                      className="flex items-center gap-2 text-stone-600 hover:text-red-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg animate-in fade-in zoom-in duration-300"
+                  >
+                      <Eye size={14} />
+                      Wake Up
+                  </button>
+                )}
+            </div>
+
+            {isDpadVisible && (
+              <div className="flex flex-col items-center gap-4 w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="relative w-36 h-36 bg-stone-900 rounded-full border-4 border-stone-800 shadow-[0_0_50px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(0,0,0,0.5)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800/20 to-transparent"></div>
+                    
+                    {/* D-Pad Buttons */}
+                    <button onClick={() => handleDpadPress('up')} className="col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-t-xl transition-all z-10"><ChevronUp size={28} /></button>
+                    <button onClick={() => handleDpadPress('left')} className="row-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-l-xl transition-all z-10"><ChevronLeft size={28} /></button>
+                    
+                    {/* Center WAKE UP Button (now using refresh icon) */}
+                    <button 
+                      onClick={wakeUp} 
+                      title="Wake Up Immediately"
+                      className="row-start-2 col-start-2 flex items-center justify-center group active:scale-90 transition-transform z-20"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-stone-800 border-2 border-stone-700 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] group-hover:border-red-500 group-active:bg-red-500 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">
+                            <RotateCcw size={18} className="text-stone-500 group-hover:text-red-100 transition-all duration-300" />
+                        </div>
+                    </button>
+
+                    <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={28} /></button>
+                    <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={28} /></button>
+                </div>
+
+                {/* Step Indicators */}
+                <div className="flex gap-2 text-[9px] font-black tracking-[0.2em] text-stone-700 uppercase">
+                    <span className={cursorIndex === 0 ? "text-red-500 animate-pulse" : ""}>STEP 1</span>
+                    <span>•</span>
+                    <span className={cursorIndex === 1 ? "text-red-500 animate-pulse" : ""}>STEP 2</span>
+                    <span>•</span>
+                    <span className={cursorIndex === 2 ? "text-red-500 animate-pulse" : ""}>STEP 3</span>
+                    <span>•</span>
+                    <span className={cursorIndex === 3 ? "text-red-500 animate-pulse" : ""}>STEP 4</span>
+                    <span>•</span>
+                    <span className={cursorIndex === 4 ? "text-red-500 animate-pulse" : ""}>STEP 5</span>
+                </div>
+              </div>
             )}
+        </div>
+      )}
+
+      <footer className="relative z-10 w-full max-w-md mb-2 flex flex-col items-center gap-2">
+        <div className="text-center h-4">
+            {isShuffling ? (
+                <p className="text-red-400 text-xs font-black animate-pulse tracking-[0.3em] uppercase">MANIFESTING NIGHTMARE...</p>
+            ) : isAwake ? (
+                 <p className="text-stone-600 text-[10px] font-bold uppercase tracking-widest animate-pulse">Swipe card to fall asleep...</p>
+            ) : isBoilerPhase ? (
+                 <p className="text-stone-500 text-[9px] font-black uppercase tracking-widest opacity-50">Locked to Card {cursorIndex + 1} of {activeStack.length}</p>
+            ) : null}
         </div>
       </footer>
     </div>
