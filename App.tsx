@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { CardData, CardType } from './types';
 import { AWAKE_CARD, ASLEEP_COVER_CARD, BOILER_ROOM_DECK } from './constants';
 import { shuffleDeck } from './utils/deckUtils';
@@ -28,7 +28,13 @@ import {
 const App: React.FC = () => {
   const [isAwake, setIsAwake] = useState<boolean>(true);
   const [isZoomedOut, setIsZoomedOut] = useState<boolean>(false);
-  const [isDpadVisible, setIsDpadVisible] = useState<boolean>(false);
+  
+  // Initialize D-pad visibility from localStorage
+  const [isDpadVisible, setIsDpadVisible] = useState<boolean>(() => {
+    const saved = localStorage.getItem('isDpadVisible');
+    return saved === 'true';
+  });
+
   const [activeStack, setActiveStack] = useState<CardData[]>([AWAKE_CARD]);
   const [cardOffsets, setCardOffsets] = useState<Record<string, {x: number, y: number}>>({});
   
@@ -40,6 +46,11 @@ const App: React.FC = () => {
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [dragState, setDragState] = useState<{ id: string, x: number, y: number } | null>(null);
 
+  // Persist D-pad visibility choice
+  useEffect(() => {
+    localStorage.setItem('isDpadVisible', String(isDpadVisible));
+  }, [isDpadVisible]);
+
   const wakeUp = useCallback(() => {
     setExitingCardId(null);
     setExitDirection(null);
@@ -50,7 +61,7 @@ const App: React.FC = () => {
     setActiveStack([AWAKE_CARD]);
     setIsZoomedOut(false);
     setCursorIndex(0);
-    setIsDpadVisible(false); // Ensure d-pad is hidden by default next time
+    // Note: We don't reset isDpadVisible here because we want to "remember" the choice
   }, []);
 
   const fallAsleepSequence = useCallback(() => {
@@ -137,7 +148,13 @@ const App: React.FC = () => {
   const isRoomEmpty = !isAwake && activeStack.length === 0 && !isShuffling;
   const isBoilerPhase = !isAwake && !isShuffling && !isRoomEmpty;
   const draggingCardIndex = dragState ? activeStack.findIndex(c => c.id === dragState.id) : -1;
-  const scaleClass = isZoomedOut ? 'scale-[0.5] sm:scale-60' : 'scale-[0.75] sm:scale-90 md:scale-100';
+  
+  // Generous scaling for better visibility while ensuring space for controls
+  const scaleClass = isZoomedOut 
+    ? 'scale-[0.5] sm:scale-60' 
+    : isDpadVisible 
+      ? 'scale-[0.8] sm:scale-95' 
+      : 'scale-[0.85] sm:scale-100';
 
   return (
     <div className="relative w-full h-[100dvh] bg-stone-950 flex flex-col items-center justify-between p-4 overflow-hidden">
@@ -175,9 +192,9 @@ const App: React.FC = () => {
         </a>
       </header>
 
-      {/* Main container: Removing overflow-hidden to prevent card clipping during vertical swipes */}
+      {/* Restore larger card container dimensions */}
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-4">
-        <div className={`relative w-64 h-[22rem] sm:w-72 sm:h-[28rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
+        <div className={`relative w-72 h-[28rem] sm:w-80 sm:h-[32rem] md:w-80 md:h-[32rem] perspective-1000 transition-all duration-500 ${scaleClass} ${!isAwake ? 'rounded-2xl ring-4 ring-stone-800 shadow-2xl bg-black' : ''}`}>
             
             {isShuffling && (
                 <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 rounded-2xl backdrop-blur-sm animate-in fade-in duration-300">
