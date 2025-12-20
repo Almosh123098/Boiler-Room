@@ -171,6 +171,12 @@ const App: React.FC = () => {
              </span>
            </div>
         </div>
+        
+        <div className="pr-1">
+          <span className="text-[10px] text-stone-600 font-bold uppercase tracking-[0.2em] opacity-60">
+            Unofficial App
+          </span>
+        </div>
       </header>
 
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-0">
