@@ -7,11 +7,9 @@ import {
   Moon, 
   Sun, 
   AlertTriangle, 
-  Eye, 
   Loader, 
   ZoomIn, 
   ZoomOut, 
-  Coffee, 
   ChevronUp, 
   ChevronDown, 
   ChevronLeft, 
@@ -173,16 +171,6 @@ const App: React.FC = () => {
              </span>
            </div>
         </div>
-
-        <a 
-          href="https://buymeacoffee.com/madman123098"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-stone-100/10 hover:bg-stone-100/20 text-stone-300 border border-stone-100/10 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all hover:scale-105 active:scale-95"
-        >
-          <Coffee size={12} className="text-yellow-500" />
-          SUPPORT
-        </a>
       </header>
 
       <main className="relative z-10 flex-1 w-full flex items-center justify-center py-0">
@@ -232,15 +220,13 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* D-Pad Interaction Area - Increased gap to 5px */}
       {!isAwake && !isShuffling && !isRoomEmpty && (
         <div className="relative z-20 flex flex-col items-center gap-[5px] animate-in slide-in-from-bottom-10 fade-in duration-500 w-full max-w-sm shrink-0">
             
-            {/* Quick Actions Panel */}
             <div className={`flex justify-center items-center gap-2 w-full px-8 mb-0`}>
                 <button 
                     onClick={() => setIsZoomedOut(!isZoomedOut)}
-                    className="flex items-center gap-2 text-stone-400 hover:text-yellow-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg"
+                    className="flex items-center gap-2 text-stone-400 hover:text-yellow-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800/40 rounded-full transition-all bg-black/40 backdrop-blur-md shadow-lg"
                     title={isZoomedOut ? "Zoom In" : "Zoom Out"}
                 >
                     {isZoomedOut ? <ZoomIn size={14} /> : <ZoomOut size={14} />}
@@ -248,16 +234,16 @@ const App: React.FC = () => {
 
                 <button 
                     onClick={() => setIsDpadVisible(!isDpadVisible)}
-                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 border rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg ${isDpadVisible ? 'text-red-400 border-red-900/40' : 'text-stone-400 border-stone-800'}`}
+                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 border rounded-full transition-all bg-black/40 backdrop-blur-md shadow-lg ${isDpadVisible ? 'text-red-400/80 border-red-900/20' : 'text-stone-400 border-stone-800/40'}`}
                     title={isDpadVisible ? "Hide Controls" : "Show Controls"}
                 >
-                    <Gamepad2 size={14} className={isDpadVisible ? 'opacity-100' : 'opacity-50'} />
+                    <Gamepad2 size={14} className={isDpadVisible ? 'opacity-80' : 'opacity-40'} />
                 </button>
 
                 {!isDpadVisible && (
                   <button 
                       onClick={wakeUp}
-                      className="flex items-center gap-2 text-stone-600 hover:text-red-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800 rounded-full transition-all bg-black/60 backdrop-blur-md shadow-lg animate-in fade-in zoom-in duration-300"
+                      className="flex items-center gap-2 text-stone-600 hover:text-red-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 border border-stone-800/40 rounded-full transition-all bg-black/40 backdrop-blur-md shadow-lg animate-in fade-in zoom-in duration-300"
                   >
                       <RotateCcw size={14} />
                       Wake Up
@@ -267,26 +253,24 @@ const App: React.FC = () => {
 
             {isDpadVisible && (
               <div className="flex flex-col items-center gap-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-300 mb-0">
-                {/* D-Pad Circle - Made transparent with bg-stone-900/40 and backdrop-blur-md */}
-                <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-stone-900/40 backdrop-blur-md rounded-full border-4 border-stone-800/60 shadow-[0_0_40px_rgba(0,0,0,0.6),inset_0_0_20px_rgba(0,0,0,0.3)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800/10 to-transparent"></div>
+                <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-stone-900/15 backdrop-blur-md rounded-full border-[3px] border-stone-800/30 shadow-[0_0_40px_rgba(0,0,0,0.4),inset_0_0_20px_rgba(0,0,0,0.2)] p-2 grid grid-cols-3 grid-rows-3 overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-800/5 to-transparent"></div>
                     
-                    {/* D-Pad Buttons */}
-                    <button onClick={() => handleDpadPress('up')} className="col-start-2 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-t-xl transition-all z-10"><ChevronUp size={24} className="sm:w-7 sm:h-7" /></button>
-                    <button onClick={() => handleDpadPress('left')} className="row-start-2 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-l-xl transition-all z-10"><ChevronLeft size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('up')} className="col-start-2 flex items-center justify-center text-stone-500/50 hover:text-red-500/80 active:scale-95 active:bg-red-500/10 rounded-t-xl transition-all z-10"><ChevronUp size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('left')} className="row-start-2 flex items-center justify-center text-stone-500/50 hover:text-red-500/80 active:scale-95 active:bg-red-500/10 rounded-l-xl transition-all z-10"><ChevronLeft size={24} className="sm:w-7 sm:h-7" /></button>
                     
                     <button 
                       onClick={wakeUp} 
                       title="Wake Up Immediately"
                       className="row-start-2 col-start-2 flex items-center justify-center group active:scale-90 transition-transform z-20"
                     >
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-stone-800/80 border-2 border-stone-700/60 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.3)] group-hover:border-red-500 group-active:bg-red-500 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">
-                            <RotateCcw size={16} className="text-stone-500 group-hover:text-red-100 transition-all duration-300 sm:w-5 sm:h-5" />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-stone-800/30 border border-stone-700/20 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.2)] group-hover:border-red-500/60 group-active:bg-red-500/60 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.3)] transition-all">
+                            <RotateCcw size={16} className="text-stone-500/60 group-hover:text-red-100 transition-all duration-300 sm:w-5 sm:h-5" />
                         </div>
                     </button>
 
-                    <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={24} className="sm:w-7 sm:h-7" /></button>
-                    <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500/80 hover:text-red-500 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('right')} className="row-start-2 col-start-3 flex items-center justify-center text-stone-500/50 hover:text-red-500/80 active:scale-95 active:bg-red-500/10 rounded-r-xl transition-all z-10"><ChevronRight size={24} className="sm:w-7 sm:h-7" /></button>
+                    <button onClick={() => handleDpadPress('down')} className="row-start-3 col-start-2 flex items-center justify-center text-stone-500/50 hover:text-red-500/80 active:scale-95 active:bg-red-500/10 rounded-b-xl transition-all z-10"><ChevronDown size={24} className="sm:w-7 sm:h-7" /></button>
                 </div>
               </div>
             )}
